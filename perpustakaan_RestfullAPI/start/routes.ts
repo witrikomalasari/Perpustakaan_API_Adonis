@@ -27,3 +27,9 @@ Route.group(() => {
   Route.resource("bukus", "BukusController").apiOnly();
   Route.resource("peminjaman", "PeminjamanController").apiOnly();
 }).prefix("/api/v1");
+
+Route.group(() => {
+  Route.post("/register", "AuthController.register");
+  Route.post("/login", "AuthController.login");
+  Route.get("/me", "AuthController.me").middleware("auth");
+}).prefix("/api/v1/auth");

@@ -1,4 +1,3 @@
-import { Response } from "@adonisjs/core/build/standalone";
 import type { HttpContextContract } from "@ioc:Adonis/Core/HttpContext";
 import User from "App/Models/User";
 import UserValidator from "App/Validators/UserValidator";
@@ -8,122 +7,104 @@ export default class UsersController {
     try {
       const validationPayload = await request.validate(UserValidator);
 
-      const newUser = await User.create(validationPayload);
+      await User.create(validationPayload);
 
-      // const newUser = new User();
-      // newUser.nama = request.input("nama");
-      // newUser.email = request.input("email");
-      // newUser.password = request.input("password");
-      // newUser.role = request.input("user");
+      const newUser = new User();
+      newUser.nama = request.input("nama");
+      newUser.email = request.input("email");
+      newUser.password = request.input("password");
+      newUser.role = request.input("role");
 
-      console.log("coba", newUser.id);
+      // console.log("coba", newUser.id);
 
-      response.created({
+      return response.created({
         message: "created",
+        data: newUser,
       });
-
-      // const validationPayloadPost = await request.validate(CategoryValidator);
-
-      // const newCategory = await Database.insertQuery() // 👈 gives an instance of insert query builder
-      //   .table("kategoris")
-      //   .insert(validationPayloadPost);
-
-      // if (!newCategory) {
-      //   return response.badRequest({
-      //     message: "Data tidak dapat tersimpan",
-      //   });
-      // }
-
-      // response.ok({
-      //   message: "Data berhasil tersimpan",
-      // });
     } catch (error) {
-      response.badRequest({ error: error.message });
+      return response.badRequest({
+        message: "Data User tidak dapat tersimpan",
+        error: error.message,
+      });
     }
   }
 
   public async index({ response }: HttpContextContract) {
-    const allDataCategories = await Database.query() // 👈 gives an instance of select query builder
-      .from("kategoris")
-      .select("*");
+    try {
+      const allDataUser = await User.all();
 
-    if (!allDataCategories) {
+      return response.ok({
+        message: `Data User berhasil ditampilkan`,
+        data: allDataUser,
+      });
+    } catch (error) {
       return response.badRequest({
-        message: "Data tidak berhasil ditampilkan",
+        message: "Data User tidak berhasil ditampilkan",
+        error: error.message,
       });
     }
-    return response.ok({
-      message: `Data berhasil ditampilkan`,
-      data: allDataCategories,
-    });
   }
 
   public async show({ response, params }: HttpContextContract) {
     let idParam = params.id;
+    try {
+      const detailUser = await User.findByOrFail("id", idParam);
 
-    const detailCategory = await Database.from("kategoris")
-      .where("id", idParam)
-      .first();
-
-    if (!detailCategory) {
+      return response.ok({
+        message: `Detail User id  ${idParam} berhasil ditampilkan`,
+        data: detailUser,
+      });
+    } catch (error) {
       return response.badRequest({
-        message: `Detail category id ${idParam} tidak berhasil ditampilkan`,
+        message: `Detail User id ${idParam} tidak berhasil ditampilkan`,
+        error: error.message,
       });
     }
-    return response.ok({
-      message: `Detail Category id  ${idParam} berhasil ditampilkan`,
-      data: detailCategory,
-    });
   }
 
   public async update({ request, response, params }: HttpContextContract) {
     let idParam = params.id;
+    try {
+      const validationPayloadUpdate = await request.validate(UserValidator);
 
-    const validationPayloadUpdate = await request.validate(CategoryValidator);
+      const detailUser = await User.find(idParam);
 
-    const detailCategory = await Database.from("kategoris")
-      .where("id", idParam)
-      .first();
+      const updateUser = await User.findByOrFail("id", idParam);
+      updateUser.nama = validationPayloadUpdate.nama;
+      updateUser.email = validationPayloadUpdate.email;
+      updateUser.password = validationPayloadUpdate.password;
 
-    const updateCategory = await Database.from("kategoris")
-      .where("id", idParam)
-      .update(validationPayloadUpdate); // 👈
+      if (!detailUser) {
+        return response.notFound({
+          message: `id ${idParam} User tidak ditemukan`,
+        });
+      }
 
-    if (!detailCategory) {
-      return response.notFound({
-        message: `id ${idParam} category tidak ditemukan`,
+      return response.ok({
+        message: `update User id ${idParam} berhasil`,
+        data: detailUser,
       });
-    }
-
-    if (!updateCategory) {
+    } catch (error) {
       return response.badRequest({
-        message: `category tidak berhasil update`,
+        message: `User tidak berhasil update`,
+        error: error.message,
       });
     }
-
-    return response.ok({
-      message: `update category id ${idParam} berhasil`,
-      data: detailCategory,
-    });
   }
 
   public async destroy({ response, params }: HttpContextContract) {
     try {
-      const data = await Database.from("kategoris")
-        .where("id", params.id)
-        .delete();
+      let idParam = params.id;
+      const dataUser = await User.findByOrFail("id", idParam);
 
-      // if (!data) {
-      //   return response.badRequest({
-      //     message: `category id ${params.id} gagal dihapus`,
-      //   });
-      // }
+      await dataUser.delete();
 
       return response.ok({
-        message: `Detail Category id  ${params.id} berhasil dihapus`,
+        message: `Detail User id  ${params.id} berhasil dihapus`,
       });
     } catch (error) {
-      response.badRequest({
+      return response.badRequest({
+        message: `User id ${params.id} gagal dihapus`,
         error: error.message,
       });
     }
