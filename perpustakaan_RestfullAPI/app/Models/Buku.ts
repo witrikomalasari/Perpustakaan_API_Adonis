@@ -20,7 +20,7 @@ export default class Buku extends BaseModel {
   public halaman: number;
 
   @column()
-  public kategor_id: number;
+  public kategori_id: number;
 
   @column.dateTime({ autoCreate: true })
   public createdAt: DateTime;

@@ -24,7 +24,7 @@ export default class BukuValidator {
    *    ```
    */
   public schema = schema.create({
-    judul: schema.string.nullableAndOptional([
+    judul: schema.string([
       rules.minLength(4),
       rules.trim(),
       rules.unique({ table: "bukus", column: "judul" }),
