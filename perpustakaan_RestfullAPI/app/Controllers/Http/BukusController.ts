@@ -9,17 +9,16 @@ export default class BukusController {
 
       const newBuku = await Buku.create(validationPayloadPost);
       // console.log(validationPayloadPost);
-      if (!newBuku) {
-        return response.badRequest({
-          message: "Data tidak dapat tersimpan",
-        });
-      }
 
       return response.ok({
         message: "Data Buku berhasil tersimpan",
+        data: newBuku,
       });
     } catch (error) {
-      return response.badRequest({ error: error.message });
+      return response.badRequest({
+        message: "Data tidak dapat tersimpan",
+        error: error.message,
+      });
     }
   }
 
@@ -34,6 +33,7 @@ export default class BukusController {
     } catch (error) {
       return response.badRequest({
         message: "Data tidak berhasil ditampilkan",
+        error: error.message,
       });
     }
   }
@@ -93,7 +93,7 @@ export default class BukusController {
         message: `Detail buku id  ${params.id} berhasil dihapus`,
       });
     } catch (error) {
-      response.badRequest({
+      return response.badRequest({
         message: `buku id ${params.id} gagal dihapus`,
         error: error.message,
       });

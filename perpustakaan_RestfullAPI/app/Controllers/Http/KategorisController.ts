@@ -9,17 +9,19 @@ export default class KategorisController {
 
       const newCategory = await Kategori.create(validationPayloadPost);
       // console.log(validationPayloadPost);
-      if (!newCategory) {
-        return response.badRequest({
-          message: "Data tidak dapat tersimpan",
-        });
-      }
+      // if (!newCategory) {
+      //   return response.badRequest({});
+      // }
 
       return response.ok({
         message: "Data kategori berhasil tersimpan",
+        data: newCategory,
       });
     } catch (error) {
-      return response.badRequest({ error: error.message });
+      return response.badRequest({
+        message: "Data tidak dapat tersimpan",
+        error: error.message,
+      });
     }
   }
 
@@ -34,6 +36,7 @@ export default class KategorisController {
     } catch (error) {
       return response.badRequest({
         message: "Data tidak berhasil ditampilkan",
+        error: error.message,
       });
     }
   }
@@ -89,7 +92,7 @@ export default class KategorisController {
         message: `Detail Category id  ${params.id} berhasil dihapus`,
       });
     } catch (error) {
-      response.badRequest({
+      return response.badRequest({
         message: `category id ${params.id} gagal dihapus`,
         error: error.message,
       });
