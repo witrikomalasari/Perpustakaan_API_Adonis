@@ -30,11 +30,13 @@ export default class UserValidator {
       }),
       rules.trim(),
     ]),
-    email: schema.string([rules.email(), rules.trim()]),
-    password: schema.string([
-      rules.unique({ table: "users", column: "password" }),
+    email: schema.string([
+      rules.email(),
+      rules.trim(),
+      rules.unique({ table: "users", column: "email" }),
     ]),
-    role: schema.enum([
+    password: schema.string([rules.trim()]),
+    role: schema.enum.nullableAndOptional([
       rules.unique({
         table: "users",
         column: "role",

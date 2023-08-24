@@ -22,5 +22,8 @@ import Route from "@ioc:Adonis/Core/Route";
 
 Route.group(() => {
   Route.resource("users", "UsersController").apiOnly();
-  // Route.resource("", "BukusController").apiOnly();
+  Route.resource("kategoris", "KategorisController").apiOnly();
+  Route.resource("profiles", "ProfilesController").apiOnly();
+  Route.resource("bukus", "BukusController").apiOnly();
+  Route.resource("peminjaman", "PeminjamanController").apiOnly();
 }).prefix("/api/v1");
