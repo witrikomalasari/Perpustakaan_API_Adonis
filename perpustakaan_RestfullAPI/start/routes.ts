@@ -21,15 +21,54 @@
 import Route from "@ioc:Adonis/Core/Route";
 
 Route.group(() => {
-  Route.resource("users", "UsersController").apiOnly();
-  Route.resource("kategoris", "KategorisController").apiOnly();
-  Route.resource("profiles", "ProfilesController").apiOnly();
-  Route.resource("bukus", "BukusController").apiOnly();
-  Route.resource("peminjaman", "PeminjamanController").apiOnly();
+  Route.resource("users", "UsersController")
+    .apiOnly()
+    .middleware({ "*": ["user", "admin"] });
+
+  Route.resource("kategoris", "KategorisController")
+    .apiOnly()
+    .middleware({ "*": "admin" });
+
+  Route.resource("bukus", "BukusController")
+    .apiOnly()
+    .middleware({ "*": ["admin"] });
+
+  // klo route.resource akses/middleware ({"*":['auth','admin']})
+  // klo route.post/get/put/delete akses/middleware (['auth','admin'])
+
+  Route.post("/profile", "AuthController.updateProfile").middleware([
+    "auth",
+    "user",
+  ]);
+
+  Route.post("/buku/:id/peminjaman", "PeminjamanController.store").middleware([
+    "auth",
+    "user",
+    "admin",
+  ]);
+
+  Route.get("/peminjaman", "PeminjamanController.index").middleware([
+    "auth",
+    "admin",
+    "user",
+  ]);
+
+  Route.get("/peminjaman/:id", "PeminjamanController.show").middleware([
+    "auth",
+    "admin",
+    "user",
+  ]);
 }).prefix("/api/v1");
 
 Route.group(() => {
-  Route.post("/register", "AuthController.register");
-  Route.post("/login", "AuthController.login");
-  Route.get("/me", "AuthController.me").middleware("auth");
+  Route.post("/register", "AuthController.register").middleware([
+    "user",
+    "admin",
+  ]);
+  Route.post("/login", "AuthController.login").middleware(["user", "admin"]);
+  Route.get("/me", "AuthController.me").middleware(["auth", "admin"]);
 }).prefix("/api/v1/auth");
+
+// Route.get("/", async ({ view }) => {
+//   return view.render("../resources/views/email/otp.edge");
+// });

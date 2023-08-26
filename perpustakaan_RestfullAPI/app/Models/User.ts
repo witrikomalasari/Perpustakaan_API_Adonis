@@ -1,6 +1,20 @@
 import { DateTime } from "luxon";
-import { BaseModel, beforeSave, column } from "@ioc:Adonis/Lucid/Orm";
+import {
+  BaseModel,
+  beforeSave,
+  column,
+  HasMany,
+  hasMany,
+  HasOne,
+  hasOne,
+  ManyToMany,
+  manyToMany,
+} from "@ioc:Adonis/Lucid/Orm";
 import Hash from "@ioc:Adonis/Core/Hash";
+
+import Profile from "./Profile";
+import Buku from "./Buku";
+import Peminjaman from "./Peminjaman";
 
 export default class User extends BaseModel {
   public static table = "users";
@@ -32,4 +46,22 @@ export default class User extends BaseModel {
       user.password = await Hash.make(user.password);
     }
   }
+  @hasOne(() => Profile, {
+    foreignKey: "user_id",
+  })
+  public profile: HasOne<typeof Profile>;
+
+  @manyToMany(() => Buku, {
+    localKey: "id",
+    pivotForeignKey: "buku_id",
+    relatedKey: "id",
+    pivotRelatedForeignKey: "buku_id",
+    pivotTable: "peminjaman",
+  })
+  public peminjaman: ManyToMany<typeof Buku>;
+
+  @hasMany(() => Peminjaman, {
+    foreignKey: "buku_id",
+  })
+  public users: HasMany<typeof Peminjaman>;
 }

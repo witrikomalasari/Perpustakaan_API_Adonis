@@ -46,5 +46,7 @@ export default class KategoriValidator {
    */
   public messages: CustomMessages = {
     required: "inputan {{field}} harus diisi tidak boleh kosong",
+    "nama.alpha": "inputan {{field}} harus alphabet",
+    "nama.unique": "inputan {{field}} harus unik/tidak boleh duplikat",
   };
 }

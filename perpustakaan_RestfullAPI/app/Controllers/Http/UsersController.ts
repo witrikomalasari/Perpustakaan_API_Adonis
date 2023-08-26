@@ -24,7 +24,7 @@ export default class UsersController {
     } catch (error) {
       return response.badRequest({
         message: "Data User tidak dapat tersimpan",
-        error: error.message,
+        error: error.messages.errors,
       });
     }
   }
@@ -40,7 +40,7 @@ export default class UsersController {
     } catch (error) {
       return response.badRequest({
         message: "Data User tidak berhasil ditampilkan",
-        error: error.message,
+        error: error.messages.errors,
       });
     }
   }
@@ -51,12 +51,12 @@ export default class UsersController {
       const detailUser = await User.findByOrFail("id", idParam);
 
       return response.ok({
-        message: `Detail User id  ${idParam} berhasil ditampilkan`,
+        message: `Detail User id  ${idParam} berhasil ditemukan`,
         data: detailUser,
       });
     } catch (error) {
-      return response.badRequest({
-        message: `Detail User id ${idParam} tidak berhasil ditampilkan`,
+      return response.notFound({
+        message: `Detail User id ${idParam} tidak ditemukan`,
         error: error.message,
       });
     }
@@ -87,14 +87,14 @@ export default class UsersController {
     } catch (error) {
       return response.badRequest({
         message: `User tidak berhasil update`,
-        error: error.message,
+        error: error.messages.errors,
       });
     }
   }
 
   public async destroy({ response, params }: HttpContextContract) {
+    let idParam = params.id;
     try {
-      let idParam = params.id;
       const dataUser = await User.findByOrFail("id", idParam);
 
       await dataUser.delete();
@@ -104,8 +104,7 @@ export default class UsersController {
       });
     } catch (error) {
       return response.badRequest({
-        message: `User id ${params.id} gagal dihapus`,
-        error: error.message,
+        message: `buku id ${params.id} gagal dihapus / id ${idParam} buku tidak terdaftar`,
       });
     }
   }

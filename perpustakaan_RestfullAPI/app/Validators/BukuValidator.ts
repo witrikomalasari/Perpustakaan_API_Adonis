@@ -24,17 +24,17 @@ export default class BukuValidator {
    *    ```
    */
   public schema = schema.create({
-    judul: schema.string([
-      rules.minLength(4),
+    judul: schema.string.optional([
+      rules.minLength(2),
       rules.trim(),
       rules.unique({ table: "bukus", column: "judul" }),
     ]),
-    ringkasan: schema.string([rules.trim(), rules.minLength(4)]),
-    tahun_terbit: schema.string([rules.trim(), rules.maxLength(4)]),
-    halaman: schema.number([rules.trim()]),
-    kategori_id: schema.number([
-      rules.trim,
-      rules.unique({
+    ringkasan: schema.string.optional([rules.minLength(2), rules.trim()]),
+    tahun_terbit: schema.string.optional([rules.maxLength(4), rules.trim()]),
+    halaman: schema.number.optional([rules.trim()]),
+    kategori_id: schema.number.optional([
+      rules.trim(),
+      rules.exists({
         table: "kategoris",
         column: "id",
       }),
@@ -54,5 +54,8 @@ export default class BukuValidator {
    */
   public messages: CustomMessages = {
     required: "inputan {{field}} harus diisi tidak boleh kosong",
+    "judul.unique": "{{field}} unik, tidak boleh sama",
+    kategori_id:
+      "kategori id harus disesuaikan dan sudah ada di list tabel kategori",
   };
 }

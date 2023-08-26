@@ -1,5 +1,6 @@
 import { DateTime } from "luxon";
-import { BaseModel, column } from "@ioc:Adonis/Lucid/Orm";
+import { BaseModel, HasMany, column, hasMany } from "@ioc:Adonis/Lucid/Orm";
+import Buku from "./Buku";
 
 export default class Kategori extends BaseModel {
   public static table = "kategoris";
@@ -15,4 +16,10 @@ export default class Kategori extends BaseModel {
 
   @column.dateTime({ autoCreate: true, autoUpdate: true })
   public updatedAt: DateTime;
+
+  // parent
+  @hasMany(() => Buku, {
+    foreignKey: "kategori_id",
+  })
+  public buku: HasMany<typeof Buku>;
 }

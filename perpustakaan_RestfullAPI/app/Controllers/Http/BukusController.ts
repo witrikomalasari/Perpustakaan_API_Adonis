@@ -1,5 +1,6 @@
 import type { HttpContextContract } from "@ioc:Adonis/Core/HttpContext";
 import Buku from "App/Models/Buku";
+import Kategori from "App/Models/Kategori";
 import BukuValidator from "App/Validators/BukuValidator";
 
 export default class BukusController {
@@ -7,8 +8,10 @@ export default class BukusController {
     try {
       const validationPayloadPost = await request.validate(BukuValidator);
 
+      // console.log("aear", validationPayloadPost);
       const newBuku = await Buku.create(validationPayloadPost);
-      // console.log(validationPayloadPost);
+      // console.log(newBuku.judul);
+      // console.log("aear", validationPayloadPost.judul);
 
       return response.ok({
         message: "Data Buku berhasil tersimpan",
@@ -17,14 +20,18 @@ export default class BukusController {
     } catch (error) {
       return response.badRequest({
         message: "Data tidak dapat tersimpan",
-        error: error.message,
+        error: error.sqlMessage || error.messages.errors,
       });
     }
   }
 
   public async index({ response }: HttpContextContract) {
     try {
-      const allDataBuku = await Buku.all();
+      const allDataBuku = await Buku.query()
+        .preload("kategori")
+        .preload("peminjaman");
+
+      // .all();
 
       return response.ok({
         message: `Data berhasil ditampilkan`,
@@ -33,7 +40,7 @@ export default class BukusController {
     } catch (error) {
       return response.badRequest({
         message: "Data tidak berhasil ditampilkan",
-        error: error.message,
+        error,
       });
     }
   }
@@ -42,10 +49,34 @@ export default class BukusController {
     let idParam = params.id;
 
     try {
-      const detailBuku = await Buku.findByOrFail("id", idParam);
+      const detailBuku = await Buku.query()
+        .where("id", idParam)
+        .select(
+          "id",
+          "judul",
+          "ringkasan",
+          "tahun_terbit",
+          "halaman",
+          "kategori_id"
+        )
+        .preload("kategori", (query) => {
+          query.select("nama");
+        })
+
+        .preload("pinjam", (query) => {
+          query.select(
+            "id",
+            "buku_id",
+            "tanggal_pinjam",
+            "tanggal_kembali",
+            " user_id"
+          );
+        })
+        .firstOrFail();
+      // .findByOrFail("id", idParam);
 
       return response.ok({
-        message: `Detail buku id  ${idParam} berhasil ditampilkan`,
+        message: `berhasil get data peminjaman`,
         data: detailBuku,
       });
     } catch (error) {
@@ -57,34 +88,53 @@ export default class BukusController {
   }
 
   public async update({ request, response, params }: HttpContextContract) {
-    try {
-      let idParam = params.id;
+    let idParam = params.id;
 
+    type IvalidationPayload = {
+      save: () => {};
+
+      judul?: string;
+      ringkasan?: string;
+      tahun_terbit?: string;
+      halaman?: number;
+      kategori_id?: number;
+    };
+
+    try {
       const validationPayloadUpdate = await request.validate(BukuValidator);
 
-      const updateBuku = await Buku.findByOrFail("id", idParam);
+      const updateBuku: IvalidationPayload = await Buku.findByOrFail(
+        "id",
+        idParam
+      );
+
       updateBuku.judul = validationPayloadUpdate.judul;
       updateBuku.ringkasan = validationPayloadUpdate.ringkasan;
       updateBuku.tahun_terbit = validationPayloadUpdate.tahun_terbit;
       updateBuku.halaman = validationPayloadUpdate.halaman;
       updateBuku.kategori_id = validationPayloadUpdate.kategori_id;
 
-      // await updateBuku?.save();
+      // const updateBuku = await Buku.query()
+      //   .where("id", idParam)
+      //   .update(validationPayloadUpdate);
+
+      await updateBuku?.save();
 
       return response.ok({
         message: `update buku id ${idParam} berhasil`,
-        data: updateBuku,
       });
     } catch (error) {
       return response.badRequest({
-        message: `buku tidak berhasil update`,
-        error: error.message,
+        message: `buku tidak berhasil di update`,
+        error: error.message.includes("Row not found")
+          ? error.message
+          : error.messages.errors,
       });
     }
   }
   public async destroy({ response, params }: HttpContextContract) {
+    let idParam = params.id;
     try {
-      let idParam = params.id;
       const dataBuku = await Buku.findByOrFail("id", idParam);
 
       await dataBuku.delete();
@@ -94,7 +144,7 @@ export default class BukusController {
       });
     } catch (error) {
       return response.badRequest({
-        message: `buku id ${params.id} gagal dihapus`,
+        message: `buku id ${params.id} gagal dihapus / id ${idParam} buku tidak terdaftar`,
         error: error.message,
       });
     }

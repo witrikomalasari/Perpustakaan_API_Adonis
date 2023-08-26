@@ -24,8 +24,8 @@ export default class PeminjamanValidator {
    *    ```
    */
   public schema = schema.create({
-    user_id: schema.number([rules.trim()]),
-    buku_id: schema.number([rules.trim()]),
+    // user_id: schema.number([rules.trim()]),
+    // buku_id: schema.number([rules.trim()]),
     tanggal_pinjam: schema.date({ format: "iso" }),
     tanggal_kembali: schema.date({ format: "iso" }),
   });

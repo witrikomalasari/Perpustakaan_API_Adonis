@@ -1,5 +1,13 @@
 import { DateTime } from "luxon";
-import { BaseModel, column } from "@ioc:Adonis/Lucid/Orm";
+import {
+  BaseModel,
+  BelongsTo,
+  belongsTo,
+  column,
+  hasMany,
+} from "@ioc:Adonis/Lucid/Orm";
+import User from "./User";
+import Buku from "./Buku";
 
 export default class Peminjaman extends BaseModel {
   public static table = "peminjaman";
@@ -24,4 +32,24 @@ export default class Peminjaman extends BaseModel {
 
   @column.dateTime({ autoCreate: true, autoUpdate: true })
   public updatedAt: DateTime;
+
+  @belongsTo(() => Buku, {
+    foreignKey: "buku_id",
+  })
+  public buku: BelongsTo<typeof Buku>;
+
+  @belongsTo(() => User, {
+    foreignKey: "user_id",
+  })
+  public user: BelongsTo<typeof User>;
+
+  @belongsTo(() => Buku, {
+    foreignKey: "buku_id",
+  })
+  public pinjam: BelongsTo<typeof Buku>;
+
+  @belongsTo(() => User, {
+    foreignKey: "user_id",
+  })
+  public users: BelongsTo<typeof User>;
 }
