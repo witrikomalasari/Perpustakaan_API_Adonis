@@ -27,8 +27,6 @@ Route.group(() => {
       store: ["auth", "user"],
       update: ["auth", "user"],
       destroy: ["auth", "user"],
-      index: ["auth", "admin", "user"],
-      show: ["auth", "admin", "user"],
     });
 
   Route.resource("kategoris", "KategorisController")
@@ -37,8 +35,6 @@ Route.group(() => {
       store: ["auth", "admin"],
       update: ["auth", "admin"],
       destroy: ["auth", "admin"],
-      index: ["auth", "admin", "user"],
-      show: ["auth", "admin", "user"],
     });
 
   Route.resource("bukus", "BukusController")
@@ -47,8 +43,6 @@ Route.group(() => {
       store: ["auth", "admin"],
       update: ["auth", "admin"],
       destroy: ["auth", "admin"],
-      index: ["auth", "admin", "user"],
-      show: ["auth", "admin", "user"],
     });
 
   // klo route.resource akses/middleware ({"*":['auth','admin']})

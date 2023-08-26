@@ -7,9 +7,9 @@ export default class PeminjamenController {
     let idParam = params.id;
     const userDetail = auth.user?.id;
 
-    const tanggalPeminjaman = new Date().toISOString();
+    // const tanggalPeminjaman = new Date().toISOString();
 
-    console.log("tgl", tanggalPeminjaman);
+    const batasWaktu = 30;
 
     try {
       const validationPayloadPost = await request.validate(PeminjamanValidator);
@@ -23,6 +23,8 @@ export default class PeminjamenController {
         validationPayloadPost.tanggal_kembali?.toISODate();
 
       let newTanggalKembali = newTanggalKembaliISO?.replace(/T.*$/, "");
+
+      // if()
 
       await Peminjaman.create({
         user_id: userDetail,
