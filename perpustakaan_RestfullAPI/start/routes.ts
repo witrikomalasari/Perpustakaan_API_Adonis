@@ -62,18 +62,15 @@ Route.group(() => {
   Route.post("/buku/:id/peminjaman", "PeminjamanController.store").middleware([
     "auth",
     "user",
-    "admin",
   ]);
 
   Route.get("/peminjaman", "PeminjamanController.index").middleware([
     "auth",
-    "admin",
     "user",
   ]);
 
   Route.get("/peminjaman/:id", "PeminjamanController.show").middleware([
     "auth",
-    "admin",
     "user",
   ]);
 }).prefix("/api/v1");
@@ -83,7 +80,3 @@ Route.group(() => {
   Route.post("/login", "AuthController.login");
   Route.get("/me", "AuthController.me").middleware(["auth", "admin"]);
 }).prefix("/api/v1/auth");
-
-// Route.get("/", async ({ view }) => {
-//   return view.render("../resources/views/email/otp.edge");
-// });
