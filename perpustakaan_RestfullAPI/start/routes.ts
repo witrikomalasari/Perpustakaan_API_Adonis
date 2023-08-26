@@ -23,15 +23,33 @@ import Route from "@ioc:Adonis/Core/Route";
 Route.group(() => {
   Route.resource("users", "UsersController")
     .apiOnly()
-    .middleware({ "*": ["user", "admin"] });
+    .middleware({
+      store: ["auth", "user"],
+      update: ["auth", "user"],
+      destroy: ["auth", "user"],
+      index: ["auth", "admin", "user"],
+      show: ["auth", "admin", "user"],
+    });
 
   Route.resource("kategoris", "KategorisController")
     .apiOnly()
-    .middleware({ "*": "admin" });
+    .middleware({
+      store: ["auth", "admin"],
+      update: ["auth", "admin"],
+      destroy: ["auth", "admin"],
+      index: ["auth", "admin", "user"],
+      show: ["auth", "admin", "user"],
+    });
 
   Route.resource("bukus", "BukusController")
     .apiOnly()
-    .middleware({ "*": ["admin"] });
+    .middleware({
+      store: ["auth", "admin"],
+      update: ["auth", "admin"],
+      destroy: ["auth", "admin"],
+      index: ["auth", "admin", "user"],
+      show: ["auth", "admin", "user"],
+    });
 
   // klo route.resource akses/middleware ({"*":['auth','admin']})
   // klo route.post/get/put/delete akses/middleware (['auth','admin'])
@@ -61,11 +79,8 @@ Route.group(() => {
 }).prefix("/api/v1");
 
 Route.group(() => {
-  Route.post("/register", "AuthController.register").middleware([
-    "user",
-    "admin",
-  ]);
-  Route.post("/login", "AuthController.login").middleware(["user", "admin"]);
+  Route.post("/register", "AuthController.register");
+  Route.post("/login", "AuthController.login");
   Route.get("/me", "AuthController.me").middleware(["auth", "admin"]);
 }).prefix("/api/v1/auth");
 

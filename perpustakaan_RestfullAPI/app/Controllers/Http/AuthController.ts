@@ -79,7 +79,7 @@ export default class AuthController {
   }
   public async me({ auth, response }: HttpContextContract) {
     const user = auth.user;
-
+    console.log("user", auth.user);
     return response.ok({ message: user });
   }
 

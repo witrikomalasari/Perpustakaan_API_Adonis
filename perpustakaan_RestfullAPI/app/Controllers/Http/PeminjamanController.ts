@@ -7,6 +7,10 @@ export default class PeminjamenController {
     let idParam = params.id;
     const userDetail = auth.user?.id;
 
+    const tanggalPeminjaman = new Date().toISOString();
+
+    console.log("tgl", tanggalPeminjaman);
+
     try {
       const validationPayloadPost = await request.validate(PeminjamanValidator);
 

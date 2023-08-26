@@ -6,6 +6,7 @@ export default class UserMiddleware {
     next: () => Promise<void>
   ) {
     const userAuth = auth.user?.role === "user";
+    console.log("u", auth.user?.role);
 
     if (userAuth) {
       await next();

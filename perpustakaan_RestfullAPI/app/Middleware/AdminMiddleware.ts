@@ -6,6 +6,7 @@ export default class AdminMiddleware {
     next: () => Promise<void>
   ) {
     const adminAuth = auth.user?.role === "admin";
+    console.log(auth.user?.role);
 
     if (adminAuth) {
       await next();
