@@ -37,6 +37,9 @@ export default class User extends BaseModel {
   @column({ columnName: "isVerified" })
   public isVerified: boolean;
 
+  @column()
+  public tokens: string;
+
   @column.dateTime({ autoCreate: true })
   public createdAt: DateTime;
 

@@ -68,6 +68,7 @@ export default class AuthController {
       required: "inputan {{field}} harus diisi tidak boleh kosong",
       "email.email": "format email contoh: johnDoe@gmail.com",
     };
+
     try {
       await request.validate({
         schema: newLoginUser,
@@ -81,6 +82,16 @@ export default class AuthController {
         expiresIn: "7 days",
       });
 
+      // console.log("tok", token.token);
+      let user = await User.findBy("email", email);
+
+      // console.log("coba", user?.tokens);
+      // tuk menyimpan token di tabel users agar mudah dilihat kembali di database jika ingin login lg
+      if (token.token) {
+        user!.tokens = token.token;
+        await user?.save();
+      }
+
       return response.ok({
         message: "login berhasil",
         token,
@@ -92,6 +103,7 @@ export default class AuthController {
           error: error.message,
         });
       }
+
       return response.unauthorized({
         message: `invalid login`,
         error: error.message.includes("User not found")
