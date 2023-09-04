@@ -67,6 +67,8 @@ Route.group(() => {
     "auth",
     "user",
   ]);
+
+  Route.post("/verifikasiOTP", "AuthController.otpConfirmation");
 }).prefix("/api/v1");
 
 Route.group(() => {

@@ -34,6 +34,9 @@ export default class User extends BaseModel {
   @column()
   public role: string;
 
+  @column({ columnName: "isVerified" })
+  public isVerified: boolean;
+
   @column.dateTime({ autoCreate: true })
   public createdAt: DateTime;
 
@@ -46,6 +49,7 @@ export default class User extends BaseModel {
       user.password = await Hash.make(user.password);
     }
   }
+
   @hasOne(() => Profile, {
     foreignKey: "user_id",
   })
@@ -61,7 +65,7 @@ export default class User extends BaseModel {
   public peminjaman: ManyToMany<typeof Buku>;
 
   @hasMany(() => Peminjaman, {
-    foreignKey: "buku_id",
+    foreignKey: "user_id",
   })
   public users: HasMany<typeof Peminjaman>;
 }

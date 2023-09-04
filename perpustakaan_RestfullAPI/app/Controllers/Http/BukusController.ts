@@ -1,6 +1,5 @@
 import type { HttpContextContract } from "@ioc:Adonis/Core/HttpContext";
 import Buku from "App/Models/Buku";
-import Kategori from "App/Models/Kategori";
 import BukuValidator from "App/Validators/BukuValidator";
 
 export default class BukusController {
@@ -69,14 +68,14 @@ export default class BukusController {
             "buku_id",
             "tanggal_pinjam",
             "tanggal_kembali",
-            " user_id"
+            "user_id"
           );
         })
         .firstOrFail();
       // .findByOrFail("id", idParam);
 
       return response.ok({
-        message: `berhasil get data peminjaman`,
+        message: `berhasil get detail buku`,
         data: detailBuku,
       });
     } catch (error) {
@@ -132,6 +131,7 @@ export default class BukusController {
       });
     }
   }
+
   public async destroy({ response, params }: HttpContextContract) {
     let idParam = params.id;
     try {

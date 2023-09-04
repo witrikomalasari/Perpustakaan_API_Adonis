@@ -1,7 +1,6 @@
 import type { HttpContextContract } from "@ioc:Adonis/Core/HttpContext";
 import Kategori from "App/Models/Kategori";
 import KategoriValidator from "App/Validators/KategoriValidator";
-import { Query } from "mysql2/typings/mysql/lib/protocol/sequences/Query";
 
 export default class KategorisController {
   public async store({ request, response }: HttpContextContract) {

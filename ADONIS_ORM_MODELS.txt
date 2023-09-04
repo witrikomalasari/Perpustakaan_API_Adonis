@@ -1,0 +1,1071 @@
+
+CREATE API WITH QUERY BUILDER ADONIS JS -- PORT 3333
+
+==================================================================================================
+NB:
+node ace migration --help
+tuk validator dibuka sekali saja saat setting type data dan rules dan message custom validator
+node ace list:routes -- tuk lihat path/route di terminal
+route:
+   POST         /api/v1/categories ────────── categories.store › CategoriesController.store
+   GET|HEAD     /api/v1/categories ────────── categories.index › CategoriesController.index
+   GET|HEAD     /api/v1/categories/:id ────── categories.show › CategoriesController.show
+   PUT|PATCH    /api/v1/categories/:id ────── categories.update › CategoriesController.update
+   DELETE       /api/v1/categories/:id ────── categories.destroy › CategoriesController.destroy
+
+request itu ada 2 dari:
+   1. req.validate(namaValidator >> link dari file validator) 
+         (const validationPayloadPost = await request.validate(CategoryValidator))
+response itu ada banyak yg sering terpakai 3 response yaitu: (sisanya cek di mdn)
+   1. ok 
+   2. badRequest
+   3. notFound
+params 
+   1. params.NamaParam (let idParam = params.id;)
+===================================================================================================
+
+==========================
+INSTALL ADONIS
+==========================
+npm init adonis-ts-app@latest hello-world || yarn create adonis-ts-app API_Perpustakaan
+
+===========================
+SETUP
+===========================
+❯ Select the project structure · api
+❯ Enter the project name · API_perpustakaan
+❯ Setup eslint? (y/N) · false
+
+tunggu proses
+lalu muncullah folder dan file2
+    1. app
+    2. commands
+    3. config
+    4. contracts
+    5. node_modules
+    6. providers
+    7. start
+    8. test
+    .adonisrc.json
+    .editorconfig
+    .env
+    .env.example
+    .env.test
+    .gitignore
+    ace
+    ace-manifest.json
+    env.ts
+    package.json
+    server.ts
+    test.ts
+    tsconfig.json
+    yarn.lock
+
+CEK package.json apakah "dev" sudah ada perintah node ace serve --watch jadi langsung saja gunakan yarn dev buat jalankan adonisrc
+
+2. cd namaAPI // cd Perpustakaan
+3. node ace serve --watch
+4. yarn dev
+   liat no port nya di  http://127.0.0.1:3333 --> artinya port yg digunakan 3333 berguna tuk di postman
+
+=======================================================================================================
+DATABASE LUCID >> INSTALL LUCID, SETTING ENV.TS, INSTALL MYSQL2, AKTIFKAN MYSQL, SETTING .EVN
+========================================================================================================
+1. yarn add @adonisjs/lucid || npm i @adonisjs/lucid
+2. node ace configure @adonisjs/lucid
+3. Pilih database yg dipakai ==> mySql , pilih pakai klik space di keyboard
+4. tambahkan di env.ts:
+   contoh:
+    DB_CONNECTION: Env.schema.string(),
+    MYSQL_HOST: Env.schema.string({ format: "host" }),
+    MYSQL_PORT: Env.schema.number(),
+    MYSQL_USER: Env.schema.string(),
+    MYSQL_PASSWORD: Env.schema.string.optional(),
+    MYSQL_DB_NAME: Env.schema.string(),
+
+5. cek di folder config => cari file database.ts
+   cari perintah dan jalankan di terminal yg dicomment:  npm i mysql2 || yarn add mysql2
+   atau
+   di doc adonisjs
+   di menu Guides => cari DATABASE 
+                  => pilih INTRODUCTION 
+                  => cari sebelah kanan DRIVER CONFIG
+                  => pilih MySQL
+                  => jalankan npm i mysql2 || yarn add mysql2
+
+6. aktifkan mysql dan apache di terminal
+   mysql > sudo /opt/lampp/lampp startmysql
+   apache > sudo /opt/lampp/lampp startapache
+7. buka localhost/phpmyadmin di browser chrome
+8. buat database baru > PerpustakaanAPI (buat manual di phpMyAdmin)
+9. buka .env
+   ganti value: 
+        MYSQL_USER=lucid
+        MYSQL_DB_NAME=nama database yg baru dibuat manual di localhost/phpmyadmin
+   menjadi:
+         MYSQL_USER=root
+         MYSQL_DB_NAME=Perpustakaan_API_Final
+
+=================================================================================================
+MIGRATION -- lihat data ERDnya tuk melihat nama tabel dan kolom2 beserta typedatanya tuk dibuat ke Database phpMyAdmin
+   >>> INGATT!! >> buat terlebih dahulu migration tuk tabel yg tidak ada FK nya <<<<
+==================================================================================================
+>> ULANGI LANGKAH DIBAWAH INI JIKA PUNYA BANYAK TABEL <<
+
+1. Buat tabel baru 
+   contoh: buat tabel Users
+   >> node ace make:migration User  // node ace make:migration namaTabel
+2. create nama kolom dan typedata,PK,FK,timestamp di file tabel hasil migration run (1692530334267_users)
+        public async up() {
+            this.schema.createTable(this.tableName, (table) => {
+               table.increments("id").primary();
+               table.string("nama", 45).notNullable();
+               table.string("email", 45).unique().notNullable();
+               table.string("password", 45).notNullable();
+               table.enu("role", ["user", "admin"]).notNullable();
+               table.timestamps(true, true);
+            });
+         }
+3. node ace migration:run => menjalankan/up ke kolom di database localhost/phpMyAdmin
+   node ace migration:status => untuk melihat status pending dan completed 
+   node ace migration:fresh => Drop all tables and re-migrate the database                                        
+   node ace migration:refresh => Rollback and migrate database
+
+   // tidak disarankan menggunakan rollback
+   node ace migration:roolback => untuk mundurkan atau membatalkan action mundur slangkah, 
+                                  ato status completed menjadi pending kembali
+                                  ato ke batch sebelumnya
+
+   >> Jika ingin menambahkan / rename / drop table buat make:migration kembali
+   ============================================================================
+   >> MENAMBAHKAN KOLOM BARU (kolom phone pada tabel users)
+      node ace make:migration add_Phone_to_users --table=users 
+         => untuk menambahkan 1 kolom baru/phone ke tabel users dan membuat nama migration baru yg sudah ada kolom phone
+            migration yg lama dihapus krn sudah tidak diperlukan (di database localhost/phpMyAdmin akan terlihat kolom phone berada di kolom terakhir)
+      
+      node ace migration:run
+   =============================================================================
+   
+   >> MENGHAPUS TABEL DAN KOLOM
+      DROP TABEL
+      node ace make:migration peminjamen_to_peminjamen 
+         public async down() {
+            this.schema.dropTable(this.tableName);
+         }
+
+         public async down() {
+            this.schema.dropTable("users");
+         }
+      
+      node ace migration:run
+   ===============================================================================
+
+   >> RENAME TABEL
+      node ace make:migration peminjamen_to_peminjamen 
+         public up() {
+            this.schema.renameTable('user', 'app_users')
+         }
+
+      node ace migration:run
+   ===================================================================================   
+   >> MENGHAPUS KOLOM DAN GANTI DENGAN KOLOM BARU FIRST NAME DAN LAST NAME
+      node ace make:migration ColumnName_changeTo_firstName_lastName 
+         public up() {
+            this.schema.alterTable('user', (table) => {
+               table.dropColumn('name')
+               table.string('first_name')
+               table.string('last_name')
+            })
+         }
+
+      node ace migration:run
+
+4. Buka di chrome localhost/phpMyAdmin
+5. cek apakah tabel2 dan kolom2 yg sudah dibuat di folder migration sudah bberhasil masuk ke database?
+
+=============================================================================
+VALIDATOR --- setting penjagaan data -> berisi typedata dan rules2 per kolom
+==============================================================================
+1. Buat Validator berdasarkan nama kolom
+   node ace make:validator namaKolom || node ace make:validator category
+   
+2. ketik/code di dalam file masing2 tabel tuk membuat nama kolom, typedata,rules2 dan message error
+      public schema = schema.create({
+         nama: schema.string([
+            rules.alpha({
+               allow: ["space"],
+            }),
+            rules.minLength(2),
+            rules.trim(),
+            rules.unique({ table: "kategoris", column: "nama" }),
+         ]),
+
+         judul: schema.string.nullableAndOptional([
+            rules.minLength(2),
+            rules.trim(),
+            rules.unique({ table: "bukus", column: "judul" }),
+         ]),
+
+         ringkasan: schema.string.nullableAndOptional([
+            rules.minLength(2),
+            rules.trim(),
+         ]),
+
+         tahun_terbit: schema.string.nullableAndOptional([
+            rules.maxLength(4),
+            rules.trim(),
+         ]),
+
+         halaman: schema.number.nullableAndOptional([rules.trim()]),
+
+         kategori_id: schema.number.nullableAndOptional([
+            rules.trim(),
+            rules.exists({ table: "kategoris", column: "id" }),
+            // kategori_id tidak boleh kosong agar tidak bisa create dan update data gunakan rules.exists
+         ]),
+      });
+
+      public messages: CustomMessages = {
+         required: `inputan {{field}} harus diisi, tidak boleh kosong`,
+      };
+
+
+==================================================================================================
+ROUTES 
+=======================================================================================================
+Route.get('/kategoris', 'KategorisController.store'). as('contracts.store')
+Route.get('/kategoris', 'KategorisController.index'). as('contracts.index')
+Route.get('/kategoris', 'KategorisController.show'). as('contracts.show')
+Route.get('/kategoris', 'KategorisController.update'). as('contracts.update')
+Route.get('/kategoris', 'KategorisController.destroy'). as('contracts.destroy')
+
+// REKOMENDASI (lebih simple, rapi, best practice) <<<<<<
+import Route from "@ioc:Adonis/Core/Route";
+
+// Di group dan prefix agar route/path dipostman menjadi http://localhost:3333/api/v1/buku
+Route.group(() => {
+  Route.resource("categories", "CategoriesController").apiOnly();
+  Route.resource("buku", "BukusController").apiOnly();
+}).prefix("/api/v1");
+
+
+================================================================================================================
+ORM - OBJECT RELATION MAPPING - CREATE MODELS >> tempat setting primary, fk, typedata dan erd(1to1,1toMany,ManyToMany)
+================================================================================================================
+node ace make:model NamaKolom || node ace make:model Category (gunakan huruf besar tuk nama tabel modelnya)
+
+
+export default class Kategori extends BaseModel {
+  public static table = "kategoris";
+
+  @column({ isPrimary: true })
+  public id: number;
+
+  @column()
+  public nama: string;
+
+  @column.dateTime({ autoCreate: true })
+  public createdAt: DateTime;
+
+  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  public updatedAt: DateTime;
+
+  // parent
+  @hasMany(() => Buku, {
+    foreignKey: "kategori_id",
+  })
+  public buku: HasMany<typeof Buku>;
+}
+
+ATAU
+=====
+
+export default class Buku extends BaseModel {
+  public static table = "bukus";
+
+  @column({ isPrimary: true })
+  public id: number;
+
+  @column()
+  public judul: string;
+
+  @column()
+  public ringkasan: string;
+
+  @column()
+  public tahun_terbit: string;
+
+  @column()
+  public halaman: number;
+
+  @column()
+  public kategori_id: number;
+
+  @column.dateTime({ autoCreate: true })
+  public createdAt: DateTime;
+
+  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  public updatedAt: DateTime;
+
+  @belongsTo(() => Kategori, {
+    foreignKey: "kategori_id",
+  })
+  public kategori: BelongsTo<typeof Kategori>;
+
+  @manyToMany(() => User, {
+    localKey: "id",
+    pivotForeignKey: "buku_id",
+    relatedKey: "id",
+    pivotRelatedForeignKey: "user_id",
+    pivotTable: "peminjaman",
+  })
+  public peminjaman: ManyToMany<typeof User>;
+
+  @hasMany(() => Peminjaman, {
+    foreignKey: "buku_id",
+  })
+  public pinjam: HasMany<typeof Peminjaman>;
+}
+
+
+
+===============================================================================================================
+CONTROLLER ||-- Store - CREATE DATA ({ request, response }: HttpContextContract) 
+==========          ---(POST)localhost:3333/api/v1/categories
+ORM
+           ||-- Index - TAMPILKAN ALL DATA ({ response }: HttpContextContract)
+                    ---(GET)localhost:3333/api/v1/categories
+
+           ||-- Show  - DETAIL DATA berdasarkan params id ({ response, params }: HttpContextContract)
+                    ---(GET)localhost:3333/api/v1/categories/2 (inputManual ID yg diinginkan)
+
+           ||-- Update - UPDATE/UBAH2 1 data berdasarkan params id ({ response, request, params }: HttpContextContract)
+                     ---(PUT)localhost:3333/api/v1/categories/2 (inputManual ID yg diinginkan)
+
+           ||-- Delete - MENGHAPUS 1 data berdasarkan params id ({ response, params }: HttpContextContract)
+                     ---(DELETE)localhost:3333/api/v1/categories/2 (inputManual ID yg diinginkan)
+===============================================================================================================================
+1. node ace list:routes -- tuk lihat path/route di terminal
+
+// REKOMENDASI pk flag --resource (lebih simple, rapi, best practice)
+2. CARA CEPAT TUK MEMBUAT CONTROLLER TABEL dengan menambahkan flag resource
+   (tinggal pakai, sudah terbuat langsung kerangka public async store/index/show/update/delete) 
+   node ace make:controller namaTabel --resource
+   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+atau buat manual kerangka public async store/index/show/update/delete
+1. node ace make:controller namaTabel
+2. lalu buat/ketik satu persatu kerangka masing2 method seperti dibawah ini:
+
+   ====================================================================================
+   CREATE DATA/INPUT BARU => GUNAKAN STORE ({request,response}: HttpContextContract)
+   ====================================================================================
+
+    public async store({ request, response }: HttpContextContract) {
+        try {
+            // mengecek validator atas inputan user di postmant apakah sudah sesuai rules2/ketentuan2
+            const validationPayloadPost = await request.validate(BukuValidator);
+
+            // bikin data baru dan upload ke database sesuai dengan inputan user dipostman
+            const newBuku = await Buku.create(validationPayloadPost);
+
+            return response.ok({
+                message: "Data Buku berhasil tersimpan",
+                data: newBuku,
+            });
+      
+        } catch (error) {
+            return response.badRequest({
+                message: "Data tidak dapat tersimpan",
+                error: error.sqlMessage || error.messages.errors,
+            });
+        }
+    }
+
+   ATAU 
+  ======
+
+    public async store({ request, response }: HttpContextContract) {
+        try {
+            // bikin data baru dan upload ke database sesuai dengan inputan user dipostman
+            const validationPayload = await request.validate(UserValidator);
+
+            await User.create(validationPayload);
+
+            const newUser = new User();
+              newUser.nama = request.input("nama");
+              newUser.email = request.input("email");
+              newUser.password = request.input("password");
+              newUser.role = request.input("role");
+
+            return response.created({
+                message: "created",
+                data: newUser,
+            });
+        } catch (error) {
+            return response.badRequest({
+                message: "Data User tidak dapat tersimpan",
+                error: error.messages.errors,
+            });
+        }
+    }
+
+   ======================================================================================
+   TAMPILKAN ALL DATA => GUNAKAN INDEX ({ response }: HttpContextContract)
+   =======================================================================================
+    public async index({ response }: HttpContextContract) {
+        try {
+            const allDataBuku = await Buku
+                .query()
+                .preload("kategori")
+                .preload("peminjaman");
+
+            return response.ok({
+                message: `Data berhasil ditampilkan`,
+                data: allDataBuku,
+            });
+
+        } catch (error) {
+            return response.badRequest({
+                message: "Data tidak berhasil ditampilkan",
+                error,
+            });
+        }
+    }
+
+   ATAU 
+  ======
+    public async index({ response }: HttpContextContract) {
+        try {
+            const allDataUser = await User.all();
+
+            return response.ok({
+                message: `Data User berhasil ditampilkan`,
+                data: allDataUser,
+            });
+        } catch (error) {
+            return response.badRequest({
+                message: "Data User tidak berhasil ditampilkan",
+                error: error.messages.errors,
+            });
+        }
+    }
+
+   ==============================================================================================
+   DETAIL DATA berdasarkan params id ({ response, params }: HttpContextContract)
+   ==============================================================================================
+    public async show({ response, params }: HttpContextContract) {
+        let idParam = params.id;
+
+        try {
+            const detailBuku = await Buku
+                .query()
+                .where("id", idParam)
+                .select(
+                    "id",
+                    "judul",
+                    "ringkasan",
+                    "tahun_terbit",
+                    "halaman",
+                    "kategori_id"
+                )
+                .preload("kategori", (query) => {query.select("nama")})
+                .preload("pinjam", (query) => {query.select( "id", "buku_id", "tanggal_pinjam", "tanggal_kembali", " user_id")})
+                .firstOrFail();
+                // .findByOrFail("id", idParam);
+
+            return response.ok({
+                message: `berhasil get data peminjaman`,
+                data: detailBuku,
+            });
+
+        } catch (error) {
+            return response.badRequest({
+                message: `Detail buku id ${idParam} tidak berhasil ditampilkan`,
+                error: error.message,
+            });
+        }
+    }
+
+
+   ATAU 
+  ======
+    public async show({ response, params }: HttpContextContract) {
+        let idParam = params.id;
+        try {
+            const detailUser = await User.findByOrFail("id", idParam);
+
+            return response.ok({
+                message: `Detail User id  ${idParam} berhasil ditemukan`,
+                data: detailUser,
+            });
+        } catch (error) {
+            return response.notFound({
+                message: `Detail User id ${idParam} tidak ditemukan`,
+                error: error.message,
+            });
+        }
+    }
+
+   ==================================================================================================
+   UPDATE/UBAH2 1 data berdasarkan params id ({ response, request, params }: HttpContextContract)
+   ==================================================================================================
+    
+    public async update({ request, response, params }: HttpContextContract) {
+        let idParam = params.id;
+
+        type IvalidationPayload = {
+            save: () => {};
+            judul?: string;
+            ringkasan?: string;
+            tahun_terbit?: string;
+            halaman?: number;
+            kategori_id?: number;
+        };
+
+        try {
+            const validationPayloadUpdate = await request.validate(BukuValidator);
+
+            const updateBuku: IvalidationPayload = await Buku
+                .findByOrFail("id",idParam);
+
+            // memasukan inputan/ketikan dari form oleh user frontend, tetapi melewati validator dulu
+            updateBuku.judul = validationPayloadUpdate.judul;
+            updateBuku.ringkasan = validationPayloadUpdate.ringkasan;
+            updateBuku.tahun_terbit = validationPayloadUpdate.tahun_terbit;
+            updateBuku.halaman = validationPayloadUpdate.halaman;
+            updateBuku.kategori_id = validationPayloadUpdate.kategori_id;
+
+            // atau bisa gunakan seperti ini selain cara diatas
+            // const updateBuku = await Buku
+            //   .query()
+            //   .where("id", idParam)
+            //   .update(validationPayloadUpdate);
+
+            await updateBuku?.save();
+
+            return response.ok({
+                message: `update buku id ${idParam} berhasil`,
+            });
+
+        } catch (error) {
+            return response.badRequest({
+                message: `buku tidak berhasil di update`,
+                error: error.message.includes("Row not found")
+                    ? error.message
+                    : error.messages.errors,
+            });
+        }
+    }
+
+   ATAU 
+  ======
+
+    public async update({ request, response, params }: HttpContextContract) {
+        let idParam = params.id;
+        try {
+            const validationPayloadUpdate = await request.validate(UserValidator);
+
+            const detailUser = await User.find(idParam);
+
+            const updateUser = await User.findByOrFail("id", idParam);
+             updateUser.nama = validationPayloadUpdate.nama;
+             updateUser.email = validationPayloadUpdate.email;
+             updateUser.password = validationPayloadUpdate.password;
+
+            if (!detailUser) {
+                return response.notFound({
+                    message: `id ${idParam} User tidak ditemukan`,
+                });
+            }
+
+            return response.ok({
+                message: `update User id ${idParam} berhasil`,
+                data: detailUser,
+            });
+
+        } catch (error) {
+            return response.badRequest({
+                message: `User tidak berhasil update`,
+                error: error.messages.errors,
+            });
+        }
+    }
+
+
+   =====================================================================================================
+   MENGHAPUS 1 data berdasarkan params id ({ response, params }: HttpContextContract)
+   =====================================================================================================
+    public async destroy({ response, params }: HttpContextContract) {
+        let idParam = params.id;
+        try {
+            const dataBuku = await Buku.findByOrFail("id", idParam);
+
+            await dataBuku.delete();
+
+            return response.ok({
+                message: `Detail buku id  ${params.id} berhasil dihapus`,
+            });
+    
+        } catch (error) {
+            return response.badRequest({
+                message: `buku id ${params.id} gagal dihapus / id ${idParam} buku tidak terdaftar`,
+                error: error.message,
+            });
+        }
+    }
+
+   ATAU 
+  =======
+    
+    public async destroy({ response, params }: HttpContextContract) {
+        let idParam = params.id;
+        try {
+            const dataUser = await User.findByOrFail("id", idParam);
+
+            await dataUser.delete();
+
+            return response.ok({
+                message: `Detail User id  ${params.id} berhasil dihapus`,
+            });
+
+        } catch (error) {
+            return response.badRequest({
+                message: `buku id ${params.id} gagal dihapus / id ${idParam} buku tidak terdaftar`,
+            });
+        }
+    }
+
+
+=================================================================================================================
+AUTHENTICATION INSTALL & CONFIGURATION >> ORM
+=================================================================================================================
+1. yarn add @adonisjs/auth || npm i @adonisjs/auth
+2. node ace configure @adonisjs/auth
+    ❯ Select provider for finding users
+        pilih Lucid (krn menggunakan ORM)
+              Database (jika menggunakan query builder)
+    ❯ Select which guard you need for authentication (select using space)
+        pilih API Tokens
+    ❯ Enter model name to be used for authentication namaTabel || Enter model name to be used for authentication User
+    ❯ Create migration for the users table?
+        pencet N >> krn migration sudah dibuat diawal
+    ❯ Select the provider for storing API Tokens
+        pilih Database >> krn menggunakan SQL tabel tuk menampung API TOKEN
+    ❯ Create migration for the API Tokens table?
+        pencet Y >> buat migration tuk API Tokens
+
+    Tunggu proses create
+3. node ace migration:run (untuk membuat migration api tokens ke dbase phpmyadmin)
+3. Cek di web localhost: phpMyAdmin apakah sudah ada table untuk api tokens
+
+    ==============================================================================================================
+    VALIDATOR & CONTROLLER AUTH (Register, Login)
+    ==============================================================================================================    
+    1. node ace make:controller Auth
+
+
+        ====================================================================================
+        CREATE REGISTER ({ request, response }: HttpContextContract)
+        ====================================================================================
+        public async register({ request, response }: HttpContextContract) {
+            const newRegisterUser = schema.create({
+                nama: schema.string([rules.unique({ table: "users", column: "nama" })]),
+                email: schema.string([
+                        rules.email(),
+                        rules.unique({ table: "users", column: "email" }),
+                        ]),
+                password: schema.string(),
+
+                role: schema.enum(["user", "admin"] as const),
+            });
+
+            const messageValidator: CustomMessages = {
+                required: "inputan {{field}} harus diisi tidak boleh kosong",
+                "nama.unique": "{{field}} unik, tidak boleh sama",
+                "email.unique": "{{field}} unik, tidak boleh sama",
+                "email.email": "format email contoh: johnDoe@gmail.com",
+            };
+
+            try {
+                const validationPayload = await request.validate({
+                    schema: newRegisterUser,
+                    messages: messageValidator,
+                });
+
+                await User.create(validationPayload);
+
+                return response.ok({
+                    message: `register berhasil`,
+                });
+
+            } catch (error) {
+                return response.unauthorized({
+                    message: `register tidak berhasil`,
+                    error: error.messages.errors,
+                });
+            }
+        }
+
+        ====================================================================================
+        CREATE LOGIN ({ auth, request, response }: HttpContextContract)
+        ====================================================================================
+        public async login({ auth, request, response }: HttpContextContract) {
+            const newLoginUser = schema.create({
+                email: schema.string([rules.email()]),
+                password: schema.string(),
+            });
+
+            const messageValidator: CustomMessages = {
+                required: "inputan {{field}} harus diisi tidak boleh kosong",
+                "email.email": "format email contoh: johnDoe@gmail.com",
+            };
+    
+            try {
+                await request.validate({
+                    schema: newLoginUser,
+                    messages: messageValidator,
+                });
+
+                const email = request.input("email");
+                const password = request.input("password");
+
+                const token = await auth.use("api")
+                                        .attempt(email, password, {expiresIn: "7 days",});
+
+                return response.ok({
+                    message: "login berhasil",
+                    token,
+                });
+
+            } catch (error) {
+                return response.unauthorized({
+                    message: `invalid login`,
+                    error: error.message.includes("User not found")
+                            ? error.responseText
+                            : error.messages.errors,
+                    });
+            }
+        }
+
+        ====================================================================================
+        CREATE ME ({ auth, response }: HttpContextContract) >> melihat siapa/role yg sedang login
+        ====================================================================================
+        public async me({ auth, response }: HttpContextContract) {
+            const user = auth.user;
+            // console.log("user", auth.user);
+            
+            return response.ok({ message: user });
+        }
+
+    ==================================================================================================
+    ROUTES 
+    =======================================================================================================
+    // FOR Auth
+    Route.group(() => {
+        Route.post("/register", "AuthController.register");
+        Route.post("/login", "AuthController.login");
+        Route.get("/me", "AuthController.me").middleware(["auth"]);
+    }).prefix("/api/v1/auth");
+
+    ==================================================================================================
+    MODELS == penambahan pada model file auth @beforeSave untuk menambahkan kode hash pada password 
+    =======================================================================================================
+    pada models file auth tambahkan :
+    @beforeSave()
+      public static async hashPassword(user: User) {
+        if (user.$dirty.password) {
+            user.password = await Hash.make(user.password);
+        }
+      }
+
+    ==================================================================================================
+    MODULE TUK MENG-ENCRYPT KODE/PASSWORD (CEK DI FOLDER CONFIG, FILE HASH.TS) : INSTALL Bcrypt 
+    =======================================================================================================
+    1. yarn add phc-bcrypt || npm install phc-bcrypt
+    2. tambahkan di file .env
+        HASH_DRIVER=bcrypt
+
+    ==================================================================================================
+    LUCID RELATIONSHIPS ( 1 TO 1 (HAS ONE), 1 TO MANY (HashMany - BelongsTo), MANY TO MANY (TABEL PIVOT) )
+    =======================================================================================================
+    1 TO 1 (HAS ONE) -- USER KE PROFILE
+    ^^^^^^^^^^^^^^^^
+        1.BUAT RELATION NYA
+            1 TO 1 (HAS ONE) >>> TABLE USER TO TABLE PROFILE
+                FOLDER MODELS, 
+             >> FILE USER.TS
+                Tambahkan: 
+                    @hasOne(() => Profile, {
+                        foreignKey: "user_id",
+                    })
+                    public profile: HasOne<typeof Profile>;
+
+        2.BUAT DI AUTH CONTROLLER TUK UPDATE PROFILE
+        ====================================================================================
+        UPDATE PROFILE ({ auth, request, response }: HttpContextContract) >> melihat siapa/role yg sedang login
+        ====================================================================================
+        public async updateProfile({ auth, request, response }: HttpContextContract) {
+            const userData = auth.user;
+
+            try {
+                const profileValidation = schema.create({
+                    bio: schema.string(),
+                    alamat: schema.string(),
+                });
+
+                await request.validate({ schema: profileValidation });
+
+                const alamatUser = request.input("alamat");
+                const bioUser = request.input("bio");
+
+                const dataProfile = {
+                    alamat: alamatUser,
+                    bio: bioUser,
+                };
+
+                // related("profile"),profile itu diambil dari nama @hasOne yg sudah dibuat di model user (public profile:.....)
+                await userData?.related("profile").updateOrCreate({}, dataProfile); 
+
+                return response.created({
+                    message: "profile berhasil diupdate",
+                });
+
+            } catch (error) {
+                return response.unauthorized({
+                    message: "profile gagal diupdate",
+                    error: error.messages.errors,
+                });
+            }
+        }
+
+        
+    1 TO MANY (HAS ONE) -- KATEGORI KE BUKU
+    ^^^^^^^^^^^^^^^^^^^
+        1. BUAT RELATIONNYA
+            1 TO MANY (Has Many - BelongsTo) >>> TABLE CATEGORY TO TABLE Buku
+                FOLDER MODELS, 
+             >> FILE CATEGORY.TS  >>> (has many artinya 1 kategori mempunyai banyak judul buku)
+                Tambahkan: 
+                   @hasMany(() => Buku, {
+                        foreignKey: "kategori_id",
+                    })
+                    public buku: HasMany<typeof Buku>; // hasMany diberi nama buku
+
+                FOLDER MODELS, 
+             >> FILE BUKU.TS   >>>> artinya fk kategori_id milik tabel kategori)
+                Tambahkan: 
+                   @belongsTo(() => Kategori, {
+                        foreignKey: "kategori_id",
+                    })
+                    public kategori: BelongsTo<typeof Kategori>; // belongsTo diberi nama kagetori
+
+        2. setelah dihubungkan, tambahkan di controller index dan show
+           KATEGORI controller - INDEX
+           tambahkan/ganti:
+             const allDataCategories = await Kategori.query().preload("buku"); // 'buku' itu diambil dari penamaan public namaHasMany di model kategori
+
+           KATEGORI controller - SHOW
+           tambahkan/ganti:
+             const detailCategory = await Kategori.query()
+                                                  .where("id", idParam)
+                                                  .select("id", "nama")
+                                                  .preload("buku", (query) => query.select("id", "judul", "ringkasan", "tahun_terbit", "halaman"))
+                                                  .firstOrFail();
+
+           BUKU controller - INDEX
+           tambahkan/ganti:
+              const allDataBuku = await Buku.query()
+                                            .preload("kategori")                                            
+
+           
+           BUKU controller - SHOW
+           tambahkan/ganti:
+                const detailBuku = await Buku.query()
+                                             .where("id", idParam)
+                                             .select("id","judul","ringkasan","tahun_terbit","halaman","kategori_id")
+                                             .preload("kategori", (query) => {query.select("nama")})
+                                             .firstOrFail();
+
+    MANY TO MANY (PIVOT TABEL) -- USER >> PEMINJAMAN << BUKU
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^
+        1. BUAT RELATIONNYA
+            MANY TO MANY (PIVOT TABLE) >>> TABLE USER - TABEL PEMINJAMAN - TABEL BUKU
+                FOLDER MODELS, 
+             >> FILE USER.TS  >>> (has many artinya 1 kategori mempunyai banyak judul buku)
+                Tambahkan: 
+                   @manyToMany(() => Buku, {
+                                    localKey: "id",
+                                    pivotForeignKey: "buku_id",
+                                    relatedKey: "id",
+                                    pivotRelatedForeignKey: "buku_id",
+                                    pivotTable: "peminjaman",
+                                })
+                    public peminjaman: ManyToMany<typeof Buku>; // many to many di User.ts diberi nama peminjaman
+
+                FOLDER MODELS, 
+             >> FILE BUKU.TS   >>>> artinya fk kategori_id milik tabel kategori)
+                Tambahkan: 
+                   @manyToMany(() => User, {
+                                    localKey: "id",
+                                    pivotForeignKey: "buku_id",
+                                    relatedKey: "id",
+                                    pivotRelatedForeignKey: "user_id",
+                                    pivotTable: "peminjaman",
+                                })
+                    public peminjaman: ManyToMany<typeof User>; // many to many di Buku.ts diberi nama peminjaman
+            
+                FOLDER MODELS, 
+             >> FILE PEMINJAMAN.TS   >>>> artinya fk kategori_id milik tabel kategori
+                Tambahkan: 
+                   @belongsTo(() => Buku, {
+                                    foreignKey: "buku_id",
+                            })
+                    public buku: BelongsTo<typeof Buku>; // belongsTo di Peminjaman.ts diberi nama buku
+
+                    @belongsTo(() => User, {
+                                    foreignKey: "user_id",
+                                })
+                    public user: BelongsTo<typeof User>; // belongsTo di Peminjaman.ts diberi nama user
+
+        2. setelah dihubungkan, tambahkan di controller index dan show
+           Peminjaman controller - INDEX
+           tambahkan/ganti:
+              const allDataPeminjaman = await Peminjaman.query()
+                                                        .preload("user") // nama user diambil dr model peminjaman.ts
+                                                        .preload("buku"); // nama buku diambil dri model peminjaman.ts
+
+           Peminjaman controller - SHOW
+           tambahkan/ganti:
+              const detailPeminjaman = await Peminjaman.query()
+                                                       .where("id", idParam)
+                                                       .select("id", "buku_id", "tanggal_pinjam", "tanggal_kembali", "user_id")
+                                                       .preload("users", (query) => {query.select("id", "nama", "email")})
+                                                       .firstOrFail();                    
+
+           buku controller - INDEX
+           tambahkan/ganti:
+              const allDataBuku = await Buku.query()
+                                            .preload("kategori")
+                                            .preload("peminjaman"); // nama peminjaman diambil dr model buku
+
+           
+
+    1 TO MANY (HAS ONE) -- USER KE PEMINJAMAN
+    ^^^^^^^^^^^^^^^^^^^
+        1. BUAT RELATIONNYA
+            1 TO MANY (Has Many - BelongsTo) >>> TABLE USER TO TABLE PEMINJAMAN
+                FOLDER MODELS, 
+             >> FILE USER.TS  >>> (has many artinya 1 kategori mempunyai banyak judul buku)
+                Tambahkan: 
+                    @hasMany(() => Peminjaman, {
+                            foreignKey: "user_id",
+                        })
+                    public users: HasMany<typeof Peminjaman>;
+
+                FOLDER MODELS, 
+             >> FILE PEMINJAMAN.TS   >>>> artinya fk kategori_id milik tabel kategori)
+                Tambahkan: 
+                    @belongsTo(() => User, {
+                           foreignKey: "user_id",
+                        })
+                    public users: BelongsTo<typeof User>;
+
+        2. setelah dihubungkan, tambahkan di controller index dan show
+           PEMINJAMAN controller - INDEX
+           tambahkan/ganti:
+               const allDataPeminjaman = await Peminjaman.query()
+                                                         .preload("user")
+                                                         .preload("buku");
+
+           PEMINJAMAN controller - SHOW
+           tambahkan/ganti:
+             const detailPeminjaman = await Peminjaman.query()
+                                                      .where("id", idParam)
+                                                      .select("id", "buku_id", "tanggal_pinjam", "tanggal_kembali", "user_id")
+                                                      .preload("users", (query) => {query.select("id", "nama", "email")})
+                                                      .firstOrFail();
+
+
+    1 TO MANY (HAS ONE) -- BUKU KE PEMINJAMAN
+    ^^^^^^^^^^^^^^^^^^^
+        1. BUAT RELATIONNYA
+            1 TO MANY (Has Many - BelongsTo) >>> TABLE BUKU TO TABLE PEMINJAMAN
+                FOLDER MODELS, 
+             >> FILE BUKU.TS  >>> (has many artinya 1 kategori mempunyai banyak judul buku)
+                Tambahkan: 
+                   @hasMany(() => Peminjaman, {
+                        foreignKey: "buku_id",
+                    })
+                    public pinjam: HasMany<typeof Peminjaman>;
+
+                FOLDER MODELS, 
+             >> FILE PEMINJAMAN.TS   >>>> artinya fk kategori_id milik tabel kategori)
+                Tambahkan: 
+                   @belongsTo(() => Buku, {
+                        foreignKey: "buku_id",
+                    })
+                    public pinjam: BelongsTo<typeof Buku>;
+
+
+        2. setelah dihubungkan, tambahkan di controller index dan show
+           BUKU controller - SHOW
+           tambahkan/ganti:
+              const detailBuku = await Buku.query()
+                                           .where("id", idParam)
+                                           .select("id","judul","ringkasan","tahun_terbit","halaman","kategori_id")
+                                           .preload("kategori", (query) => {query.select("nama")})
+                                           .preload("pinjam", (query) => {query.select("id","buku_id","tanggal_pinjam",
+                                                                                        "tanggal_kembali","user_id");
+                                                                                        })
+                                           .firstOrFail();
+
+2. yarn dev agar bisa menjalankan POSTMAN untuk isi data atau INSERT INTO ke masing2 kolom
+
+=====================================================================================================
+POSTMAN
+======================================================================================================
+
+1. Buka postman
+2. Pilih methodnya: POST/GET/PUT/DELETE dan masukan alamat route/pathnya (localhost:3333/api/v1/namaKolom/params jika ada)
+3. POST + route + masukan data tiap kolom yg ingin diinput ke dbase + klik SEND
+   GET + route + klik SEND (cek apakah data sudah terinput setelah post)
+   GET + route/paramsID + klik SEND (tuk mengambil/melihat detail data berdasarkan params id yg diinginkan)
+   PUT + route/paramsID + ketik kolom/ketik beberapa kolom dan masukan value/data yg ingin diubah/diganti2 + klik SEND
+   DELETE + route/paramsID + klik SEND (tuk menghapus data berdasarkan params id)
+
+4. Dokumentasikan collection API
+   1. Klik save disetiap method jika ingin mendokumentasikan nya ke list collection
+   2. Klik New Collection
+   3. Ketik namaCollection -> klik create
+   4. Klik New Folder jika ingin men-sub kan nya kembali 
+      contoh: 
+         1. folder auth, 
+         2. folder category, 
+         3. folder buku/content, 
+         4. folder register, 
+         5. folder profile
+   5. Ketik di form Request Name sesuai dengan kegunaannya
+      Contoh: 
+         ketik create category  tuk Perintah POST
+               get all data category  tuk Perintah GET
+               get detail category  tuk Perintah GET (get detail)
+               update category  tuk Perintah PUT
+               delete category  tuk Perintah DELETE
+
+=====================================================================================================
+MIDDLEWARE FOR AUTH AND ROLE (USER OR ADMIN)
+======================================================================================================
+
+
+
+   
+   
+
+
+
+
+
+
+
+
+
