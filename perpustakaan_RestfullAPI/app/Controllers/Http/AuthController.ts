@@ -82,7 +82,7 @@ export default class AuthController {
         expiresIn: "7 days",
       });
 
-      // console.log("tok", token.token);
+      // console.log("tok", token);
       let user = await User.findBy("email", email);
 
       // console.log("coba", user?.tokens);
@@ -165,9 +165,11 @@ export default class AuthController {
       .first();
 
     // console.log("otp", otpCheckToDB);
+    console.log("user", user);
 
     if (user?.id === otpCheckToDB?.user_id) {
       user!.isVerified = true;
+      // user!.tokens = user?.token;
       await user?.save();
 
       return response.ok({

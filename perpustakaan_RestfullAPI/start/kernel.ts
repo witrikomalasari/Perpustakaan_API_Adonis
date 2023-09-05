@@ -42,4 +42,5 @@ Server.middleware.registerNamed({
   auth: () => import("App/Middleware/Auth"),
   admin: () => import("App/Middleware/AdminMiddleware"),
   user: () => import("App/Middleware/UserMiddleware"),
+  verify: () => import("App/Middleware/Verify"),
 });

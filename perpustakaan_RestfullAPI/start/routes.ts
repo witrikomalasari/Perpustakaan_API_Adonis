@@ -24,25 +24,25 @@ Route.group(() => {
   Route.resource("users", "UsersController")
     .apiOnly()
     .middleware({
-      store: ["auth", "user"],
-      update: ["auth", "user"],
-      destroy: ["auth", "user"],
+      store: ["auth", "verify", "user"], // user
+      update: ["auth", "verify", "user"], // user
+      destroy: ["auth", "verify", "user"], // user
     });
 
   Route.resource("kategoris", "KategorisController")
     .apiOnly()
     .middleware({
-      store: ["auth", "admin"],
-      update: ["auth", "admin"],
-      destroy: ["auth", "admin"],
+      store: ["auth", "verify", "admin"],
+      update: ["auth", "verify", "admin"],
+      destroy: ["auth", "verify", "admin"],
     });
 
   Route.resource("bukus", "BukusController")
     .apiOnly()
     .middleware({
-      store: ["auth", "admin"],
-      update: ["auth", "admin"],
-      destroy: ["auth", "admin"],
+      store: ["auth", "verify", "admin"],
+      update: ["auth", "verify", "admin"],
+      destroy: ["auth", "verify", "admin"],
     });
 
   // klo route.resource akses/middleware ({"*":['auth','admin']})
@@ -50,21 +50,25 @@ Route.group(() => {
 
   Route.post("/profile", "AuthController.updateProfile").middleware([
     "auth",
+    "verify",
     "user",
   ]);
 
   Route.post("/buku/:id/peminjaman", "PeminjamanController.store").middleware([
     "auth",
+    "verify",
     "user",
   ]);
 
   Route.get("/peminjaman", "PeminjamanController.index").middleware([
     "auth",
+    "verify",
     "user",
   ]);
 
   Route.get("/peminjaman/:id", "PeminjamanController.show").middleware([
     "auth",
+    "verify",
     "user",
   ]);
 
