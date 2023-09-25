@@ -1,4 +1,13 @@
 
+user
+email : bella@gmail.com
+pass : bella123
+
+admin
+email : admin@gmail.com
+pass : admin123
+
+
 CREATE API WITH QUERY BUILDER ADONIS JS -- PORT 3333
 
 ==================================================================================================
